@@ -8,7 +8,8 @@
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
-  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>          // Add sensor_msgs as a dependency
+  <exec_depend>matplotlib</exec_depend> // Add matplotlib as an execution dependency
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_copyright</test_depend>
@@ -20,3 +21,4 @@
     <build_type>ament_python</build_type>
   </export>
 </package>
+

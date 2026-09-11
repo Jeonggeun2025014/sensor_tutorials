@@ -24,7 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'subscriber_lidar = lidar_package.subcriber_lidar:main'
+            'lidar_subscriber = lidar_package.lidar_subscriber:main'
         ],
     },
 )
+
