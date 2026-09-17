@@ -16,9 +16,6 @@ class LidarSubscriber(Node):
             LaserScan, '/scan', self.scan_callback, 10)
         self.subscription
 
-        self.timer = self.create_timer(1.0, self.publish_cloud)
-        self.points = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
-
         self.cloud_pub = self.create_publisher(PointCloud2, '/lidar_points', 10)
         self.get_logger().info('LidarSubscriber node started.')
 
@@ -33,11 +30,14 @@ class LidarSubscriber(Node):
         self.publish_cloud(xs, ys)  # PointCloud2로 발행
 
     def publish_cloud(self, xs, ys):
+        # 2차원 라이다라서 z는 항상 0.0으로 채움
+        points = [[x, y, 0.0] for x, y in zip(xs, ys)]
+
         header = Header()
         header.frame_id = 'base_link'
         header.stamp = self.get_clock().now().to_msg()
-        msg = point_cloud2.create_cloud_xyz32(header, self.points)
-        self.pub.publish(msg)
+        msg = point_cloud2.create_cloud_xyz32(header, points)
+        self.cloud_pub.publish(msg)
 
 
     def process_scan_data(self, scan_msg, xs, ys):
@@ -67,7 +67,7 @@ class LidarSubscriber(Node):
         # 그래프 초기 설정 (x-y 직교좌표)
         plt.ion()
         self.fig, self.ax = plt.subplots()
-        self.points, = self.ax.plot([], [], 'b.')
+        self.plot_line, = self.ax.plot([], [], 'b.')
         self.ax.set_xlim(-3, 3)
         self.ax.set_ylim(-3, 3)
         self.ax.set_aspect('equal')
@@ -76,7 +76,7 @@ class LidarSubscriber(Node):
         self.ax.set_ylabel("y (m)")
 
     def plot_scan(self, xs, ys):
-        self.points.set_data(xs, ys)
+        self.plot_line.set_data(xs, ys)
         self.ax.figure.canvas.draw()
         self.ax.figure.canvas.flush_events()
 
