@@ -1,7 +1,11 @@
 import math
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import LaserScan
+
+from sensor_msgs.msg import LaserScan, PointCloud2
+from sensor_msgs_py import point_cloud2
+from std_msgs.msg import Header
+
 import matplotlib.pyplot as plt
 
 class LidarSubscriber(Node):
@@ -11,16 +15,30 @@ class LidarSubscriber(Node):
         self.subscription = self.create_subscription(
             LaserScan, '/scan', self.scan_callback, 10)
         self.subscription
+
+        self.timer = self.create_timer(1.0, self.publish_cloud)
+        self.points = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+
+        self.cloud_pub = self.create_publisher(PointCloud2, '/lidar_points', 10)
         self.get_logger().info('LidarSubscriber node started.')
 
         self.init_plot()
-    
+
     def scan_callback(self, scan_msg):
         xs = []
         ys = []
 
         self.process_scan_data(scan_msg, xs, ys)
         self.plot_scan(xs, ys)  # 그래프 갱신
+        self.publish_cloud(xs, ys)  # PointCloud2로 발행
+
+    def publish_cloud(self, xs, ys):
+        header = Header()
+        header.frame_id = 'base_link'
+        header.stamp = self.get_clock().now().to_msg()
+        msg = point_cloud2.create_cloud_xyz32(header, self.points)
+        self.pub.publish(msg)
+
 
     def process_scan_data(self, scan_msg, xs, ys):
         # ranges 배열을 하나씩 순회하면서 (거리, 각도) -> (x, y)로 변환
